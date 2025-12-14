@@ -1,0 +1,25 @@
+# General
+.env
+**/vendor/
+.DS_Store
+.tmp/
+
+# Fabric Artifacts (Generated)
+infrastructure/fabric/crypto-config/
+infrastructure/fabric/channel-artifacts/
+*.block
+*.tx
+
+# Go Binaries & Build
+backend/api-service/main
+backend/worker-service/main
+backend/api-service/go.sum
+backend/worker-service/go.sum
+
+# Terraform/Other infrastructure state (if any)
+.terraform/
+*.tfstate*
+
+# IDEs
+.vscode/
+.idea/

@@ -1,0 +1,114 @@
+Với yêu cầu tối giản này, bài toán chuyển từ "Quản lý chuỗi cung ứng toàn diện" sang **"Hệ thống xác thực nguồn gốc & Chống giả mạo (MVP)"**.
+
+Mục tiêu cốt lõi: **Nhà sản xuất (Producer)** tạo ra một chứng nhận số cho sản phẩm, và **Người tiêu dùng (Consumer)** có thể kiểm tra tính xác thực của chứng nhận đó trên Blockchain.
+
+Dưới đây là kiến trúc chi tiết dựa trên Tech Stack bạn đã chọn:
+
+---
+
+### 1. Mô hình Kiến trúc Tối giản (Simplified Architecture)
+
+Chúng ta sẽ sử dụng mô hình **Asynchronous Processing** (Xử lý bất đồng bộ) với Kafka để việc ghi dữ liệu vào Blockchain không làm chậm trải nghiệm người dùng trên App.
+
+
+
+Hệ thống gồm 3 khối chính:
+
+1.  **Client Side (Flutter):** Giao diện nhập liệu và kiểm tra.
+2.  **Server Side (Golang + Kafka + Postgres):** Xử lý logic, lưu trữ đệm và điều phối.
+3.  **Blockchain Network (Hyperledger Fabric):** Sổ cái bất biến (Immutable Ledger).
+
+---
+
+### 2. Chi tiết từng thành phần công nghệ
+
+#### A. Frontend: Flutter App
+Ứng dụng sẽ có 2 vai trò (Roles) trên cùng một source code hoặc chia module:
+* **Producer Mode:**
+    * Đăng nhập.
+    * Form tạo lô sản phẩm (Tên, ngày sx, hình ảnh, mô tả...).
+    * Nút "Tạo tem truy xuất" -> Gửi request về Backend.
+    * Danh sách các lô hàng đã tạo & trạng thái (Đang xử lý blockchain / Đã hoàn thành).
+* **Consumer Mode (Public):**
+    * Không cần đăng nhập.
+    * Camera quét QR Code.
+    * Màn hình hiển thị thông tin sản phẩm lấy từ DB + Trạng thái xác thực ("Verified by Blockchain").
+
+#### B. Backend: Golang (API & Worker)
+Chúng ta chia Backend thành 2 phần nhỏ để tận dụng Kafka:
+
+1.  **API Service (Golang - Gin/Fiber/Echo):**
+    * Nhận request từ Flutter.
+    * Lưu dữ liệu ngay lập tức vào **PostgreSQL** với trạng thái `PENDING`.
+    * Gửi một message (chứa ID sản phẩm) vào **Kafka Topic** (`product.create`).
+    * Trả về response "Thành công" cho User ngay lập tức (không bắt User chờ Blockchain confirm).
+
+2.  **Blockchain Worker (Golang):**
+    * Lắng nghe (Consume) từ **Kafka**.
+    * Khi nhận message: Lấy dữ liệu từ PostgreSQL.
+    * Sử dụng **Hyperledger Fabric Go SDK** để gọi Transaction `CreateAsset` lên mạng Blockchain.
+    * Sau khi Blockchain xác nhận (Block committed), Worker cập nhật lại trạng thái trong PostgreSQL thành `VERIFIED` và lưu `TransactionID`.
+
+#### C. Database: PostgreSQL
+Thiết kế Schema đơn giản hóa:
+
+* **Table `users`:** ID, Username, Password (Hash), Role (Producer).
+* **Table `products`:**
+    * `id` (UUID - Khóa chính, dùng để sinh QR).
+    * `name`, `description`, `manufacture_date`, `image_url`.
+    * `producer_id` (FK).
+    * `blockchain_tx_id` (Lưu mã giao dịch Fabric).
+    * `status` (ENUM: PENDING, VERIFIED, FAILED).
+    * `data_hash` (Mã băm SHA256 của toàn bộ thông tin sản phẩm - dùng để đối chiếu).
+
+#### D. Blockchain: Hyperledger Fabric
+* **Network:** Thiết lập 1 Org (Producer Org) và 1 Orderer (Solo/Raft) chạy trên Docker.
+* **Chaincode (Smart Contract):** Viết bằng **Golang**.
+    * Asset: `Product {ID, Hash, ProducerID, Timestamp}`.
+    * Lưu ý: Chỉ lưu các thông tin quan trọng nhất và mã Hash lên Blockchain để tối ưu hiệu năng. Dữ liệu rác (mô tả dài, ảnh) để ở Postgres.
+
+#### E. Infrastructure: Docker
+Sử dụng `docker-compose.yml` để dựng toàn bộ môi trường development:
+* Container 1: Postgres.
+* Container 2: Zookeeper (Phục vụ Kafka).
+* Container 3: Kafka.
+* Container 4-x: Hyperledger Fabric Nodes (Peer, Orderer, CA) - *Khuyên dùng công cụ Minifabric để dựng nhanh gọn trên Docker.*
+* Container 5: Golang API.
+* Container 6: Golang Worker.
+
+---
+
+### 3. Luồng dữ liệu (Data Flow) - Kịch bản "Tạo sản phẩm"
+
+1.  **User (Producer)** điền thông tin quả táo trên Flutter App, bấm "Tạo".
+2.  **Flutter** gửi POST request tới **Golang API**.
+3.  **Golang API**:
+    * Tính toán mã `Hash = SHA256(Tên + Ngày + ...)`.
+    * INSERT vào **PostgreSQL**: Status = `PENDING`.
+    * Push message vào **Kafka**: `{"product_id": "123", "action": "create"}`.
+    * Trả về cho App: "Đang khởi tạo tem".
+4.  **Golang Worker** đọc Kafka, thấy message `product_id: 123`.
+5.  **Worker** gọi **Fabric SDK**, thực thi Chaincode: `CreateProduct("123", "Hash_XYZ")`.
+6.  **Hyperledger Fabric** ghi block mới.
+7.  **Worker** nhận kết quả thành công, UPDATE **PostgreSQL**: Status = `VERIFIED`, TxID = `0xabc...`.
+8.  User refresh app sẽ thấy tem đã chuyển sang màu xanh (Đã xác thực).
+
+---
+
+### 4. Hướng đi phát triển (Future Roadmap - Các phần đã lược bỏ)
+
+Đây là các tính năng bạn ghi chú lại để phát triển sau khi MVP hoàn thành:
+
+* **Phase 2: Mở rộng chuỗi cung ứng (Supply Chain Flow):**
+    * Thêm các bảng `Logistics`, `Retailer` vào DB.
+    * Thêm Chaincode function `TransferAsset` để chuyển quyền sở hữu sản phẩm từ Nhà vườn -> Vận chuyển -> Siêu thị.
+* **Phase 3: Tự động hóa (IoT Integration):**
+    * Xây dựng tầng thu thập dữ liệu tự động (Cảm biến nhiệt độ kho lạnh).
+    * Kết nối MQTT Broker thay vì nhập tay trên App.
+* **Phase 4: Scaling & Deployment:**
+    * Chuyển từ Docker Compose sang **Kubernetes (K8s)** để chịu tải cao.
+    * Thêm MongoDB để lưu Logs lịch sử di chuyển (Trace logs).
+
+### 5. Bước hành động tiếp theo
+
+Bạn có muốn tôi viết mẫu đoạn code **Golang (Chaincode)** cho Hyperledger Fabric định nghĩa cái `Asset` sản phẩm này không?
