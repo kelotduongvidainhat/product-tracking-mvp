@@ -2,7 +2,7 @@
 
 This project is a complete End-to-End product origin verification system, leveraging Blockchain (Hyperledger Fabric) to ensure data immutability, combined with a high-performance Backend (Go, Kafka) and a multi-platform Frontend (Flutter).
 
-## 🌟 Key Features
+## Key Features
 
 *   **Blockchain Authentication:** Product data originating from the source is stored on Hyperledger Fabric and cannot be tampered with.
 *   **Event-Driven Architecture:** Utilizes Kafka for asynchronous processing, ensuring the system remains responsive and is not blocked by Blockchain write latency.
@@ -10,7 +10,7 @@ This project is a complete End-to-End product origin verification system, levera
 *   **User Experience:** Clear role separation (Producer/Consumer), supporting high-speed QR Code scanning.
 *   **Easy Deployment:** The entire system is packaged and verified using Docker Compose.
 
-## 🏗 System Architecture
+## System Architecture
 
 The system consists of 4 main layers:
 
@@ -35,23 +35,21 @@ The system consists of 4 main layers:
     *   **Makefiles & Shell Scripts:** Automation for setup, testing, and deployment.
 
 ---
-## ⚠️ Disclaimer
+## Disclaimer
 
 This project was created for **learning and research purposes**.
-All feedback is welcome and much appreciated, including criticism and "brickbats" 🧱!
+All feedback is welcome and much appreciated, including criticism and "brickbats"!
 
-> **Note:** The AI built the MVP, while the "Monkey" 🐒 (Human) is responsible for reviewing the design, disassembling, and fixing it.
+> **Note:** The AI built the MVP, while the "Monkey" (Human) is responsible for reviewing the design, disassembling, and fixing it.
 
-**Author:** AI Assistant & [Your Name]
-
-## 🛠 Prerequisites
+## Prerequisites
 
 *   **Docker & Docker Compose** (Required)
 *   **Go** (1.20+)
 *   **Flutter** (3.0+)
 *   **Make** (Standard on Linux/Mac, requires installation on Windows)
 
-## 🚀 Getting Started
+## Getting Started
 
 ### 1. Start Infrastructure & Backend
 
@@ -95,7 +93,7 @@ flutter run -d chrome
 flutter run
 ```
 
-## 🧪 Testing
+## Testing
 
 The project comes with automated test scripts:
 
@@ -109,7 +107,7 @@ The project comes with automated test scripts:
     ```
     *This script simulates product creation via API -> Kafka -> Worker -> Blockchain -> DB and verifies the final state.*
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 product-tracking/
@@ -128,13 +126,13 @@ product-tracking/
 └── README.md               # Documentation
 ```
 
-## 🛡 Security
+## Security
 
 *   Blockchain Private Keys are gitignored.
 *   Database credentials are managed via environment variables (`.env`).
 *   API supports CORS for secure browser execution.
 
-## 🔮 Roadmap
+## Roadmap
 
 *   [x] MVP: Create & Read Product (Blockchain + App).
 *   [ ] User Authentication (Auth0 / JWT).
