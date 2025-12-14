@@ -40,9 +40,7 @@ The system consists of 4 main layers:
 This project was created for **learning and research purposes**.
 All feedback is welcome and much appreciated, including criticism and "brickbats" 🧱!
 
-> **Note:** The AI built the MVP, while the "Monkey" 🐒 (Human) is responsible for reviewing the design, disassembling, and fixing it.
-
-**Author:** AI Assistant & [Your Name]
+> **Note:** The AI built the MVP, while the "Monkey"🐒 (Human) is responsible for reviewing the design, disassembling, and fixing it.
 
 ## 🛠 Prerequisites
 
