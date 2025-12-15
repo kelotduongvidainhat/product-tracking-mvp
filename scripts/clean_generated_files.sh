@@ -22,4 +22,8 @@ rm -f Org1MSPanchors.tx
 echo "Removing chaincode packages..."
 rm -f product_cc.tar.gz
 
+# Remove Packaging Temporary Files
+echo "Removing packaging temp files..."
+rm -f ../../chaincode/packaging/code.tar.gz
+
 echo "Cleanup complete!"

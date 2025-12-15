@@ -35,5 +35,5 @@ network-down:
 
 network-clean: network-down
 	@echo "Cleaning up..."
-	cd infrastructure/fabric && rm -rf crypto-config channel.tx genesis.block Org1MSPanchors.tx
+	./scripts/clean_generated_files.sh
 	@echo "Cleanup done."
