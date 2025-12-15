@@ -80,6 +80,7 @@ After installation, try running the following commands in the terminal to ensure
     ```bash
     make infra-up
     make network-up
+    ./scripts/deploy_chaincode.sh
     ```
 
 4.  **Run Backend:**
@@ -92,3 +93,34 @@ After installation, try running the following commands in the terminal to ensure
     cd frontend/web_app
     npm run dev
     ```
+
+## 6. Troubleshooting
+
+### `.env` file missing
+If you encounter errors about missing `.env` files when running `make infra-up`, ensure you have created one:
+```bash
+cp .env.example .env
+```
+
+### Backend Build Failures (go.sum missing)
+If `make app-up` fails with errors related to `go.sum`, you may need to generate them:
+```bash
+cd backend/api-service && go mod tidy
+cd ../worker-service && go mod tidy
+cd ../..
+```
+
+### Verifying Chaincode
+If you are unsure if the chaincode is running, you can:
+1. Check if the `chaincode-server` container is up: `docker ps | grep chaincode`
+2. Query the lifecycle commit status:
+    ```bash
+    docker exec cli peer lifecycle chaincode querycommitted --channelID mychannel --name product_cc
+    ```
+
+## 7. Cleanup
+To stop the network and remove generated artifacts (crypto material, blocks, etc.), run:
+```bash
+make network-clean
+```
+Make sure to clean generated files before commit and push to ensure a clean repository state.

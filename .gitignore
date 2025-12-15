@@ -13,8 +13,6 @@ infrastructure/fabric/channel-artifacts/
 # Go Binaries & Build
 backend/api-service/main
 backend/worker-service/main
-backend/api-service/go.sum
-backend/worker-service/go.sum
 
 # Terraform/Other infrastructure state (if any)
 .terraform/
