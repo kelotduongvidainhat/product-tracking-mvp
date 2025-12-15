@@ -83,10 +83,12 @@ cp .env.example .env
 Open a new terminal:
 
 ```bash
+# Option A: Run via Docker (Recommended)
+make frontend-up
+
+# Option B: Run Locally (Node.js required)
 cd frontend/web_app
 npm install
-
-# Run Development Server
 npm run dev
 ```
 
