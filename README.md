@@ -1,12 +1,12 @@
 # Product Origin Authentication & Anti-Counterfeiting System (MVP)
 
-This project is a complete End-to-End product origin verification system, leveraging Blockchain (Hyperledger Fabric) to ensure data immutability, combined with a high-performance Backend (Go, Kafka) and a multi-platform Frontend (Flutter).
+This project is a complete End-to-End product origin verification system, leveraging Blockchain (Hyperledger Fabric) to ensure data immutability, combined with a high-performance Backend (Go, Kafka) and a Web Frontend (Next.js).
 
 ## Key Features
 
 *   **Blockchain Authentication:** Product data originating from the source is stored on Hyperledger Fabric and cannot be tampered with.
 *   **Event-Driven Architecture:** Utilizes Kafka for asynchronous processing, ensuring the system remains responsive and is not blocked by Blockchain write latency.
-*   **Multi-Platform:** The application runs smoothly on Android, iOS, and Web.
+*   **Modern Web Interface:** Built with Next.js, Tailwind CSS, and Glassmorphism for a premium user experience.
 *   **User Experience:** Clear role separation (Producer/Consumer), supporting high-speed QR Code scanning.
 *   **Easy Deployment:** The entire system is packaged and verified using Docker Compose.
 
@@ -26,7 +26,7 @@ The system consists of 4 main layers:
     *   **Database (PostgreSQL):** Stores off-chain data for high-speed querying (CQRS pattern).
 
 3.  **Frontend Layer (Mobile/Web):**
-    *   **Flutter App:** Single codebase for both mobile and web.
+    *   **Next.js Web App:** Modern, responsive web interface.
     *   **Producer Mode:** Create new product batches.
     *   **Consumer Mode:** Scan QR codes or enter IDs to verify information and blockchain signatures.
 
@@ -46,7 +46,7 @@ All feedback is welcome and much appreciated, including criticism and "brickbats
 
 *   **Docker & Docker Compose** (Required)
 *   **Go** (1.20+)
-*   **Flutter** (3.0+)
+*   **Node.js** (18+) & **npm**
 *   **Make** (Standard on Linux/Mac, requires installation on Windows)
 
 ## Getting Started
@@ -78,20 +78,19 @@ Copy the example file and modify if necessary:
 cp .env.example .env
 ```
 
-### 3. Run Client App (Flutter)
+### 3. Run Client App (Next.js)
 
 Open a new terminal:
 
 ```bash
-cd frontend/mobile_app
-flutter pub get
+cd frontend/web_app
+npm install
 
-# Run on Chrome (Web)
-flutter run -d chrome
-
-# Or run on Android (requires connected device/emulator)
-flutter run
+# Run Development Server
+npm run dev
 ```
+
+Access the app at `http://localhost:3000`.
 
 ## Testing
 
@@ -117,7 +116,7 @@ product-tracking/
 │   └── docker-compose-app.yaml
 ├── chaincode/              # Smart Contract (Go)
 ├── frontend/               # Frontend Source Code
-│   └── mobile_app/         # Flutter App
+│   └── web_app/            # Next.js App
 ├── infrastructure/         # Infrastructure Configuration
 │   ├── fabric/             # Hyperledger Fabric Config
 │   └── docker-compose-backend.yaml # Postgres & Kafka
