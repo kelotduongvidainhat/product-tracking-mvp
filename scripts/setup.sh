@@ -109,35 +109,26 @@ else
     echo -e "${GREEN}✔ Go đã được cài đặt: $(go version)${NC}"
 fi
 
-# 4. Kiểm tra Flutter
-echo -e "\n${BLUE}[4/4] Kiểm tra Flutter...${NC}"
-FLUTTER_DIR="$HOME/development/flutter"
-if ! command -v flutter >/dev/null 2>&1; then
-    echo -e "${YELLOW}Flutter chưa có. Đang clone từ Github (Stable channel) về $FLUTTER_DIR ...${NC}"
-    mkdir -p "$HOME/development"
-    if [ ! -d "$FLUTTER_DIR" ]; then
-        git clone https://github.com/flutter/flutter.git -b stable "$FLUTTER_DIR"
-    fi
+# 4. Kiểm tra Node.js & npm (Frontend Mới - Next.js)
+echo -e "\n${BLUE}[4/4] Kiểm tra Node.js & npm...${NC}"
+if ! command -v node >/dev/null 2>&1; then
+    echo -e "${YELLOW}Node.js chưa có. Đang thử cài đặt NVM và Node.js LTS...${NC}"
     
-    # Setup PATH tạm thời
-    export PATH="$PATH:$FLUTTER_DIR/bin"
+    # Cài đặt NVM
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
     
-    # Cấu hình shell
-    SHELL_PROFILE="$HOME/.bashrc"
-    if [ -n "$ZSH_VERSION" ]; then SHELL_PROFILE="$HOME/.zshrc"; fi
-
-    if ! grep -q "$FLUTTER_DIR/bin" "$SHELL_PROFILE"; then
-        echo -e "${GREEN}Cập nhật PATH vào $SHELL_PROFILE ...${NC}"
-        echo "export PATH=\$PATH:$FLUTTER_DIR/bin" >> "$SHELL_PROFILE"
-    fi
+    # Load NVM ngay lập tức
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     
-    echo -e "${YELLOW}Đang chạy flutter precache (có thể mất vài phút)...${NC}"
-    flutter precache
+    # Cài đặt Node LTS
+    nvm install --lts
+    nvm use --lts
     
-    echo -e "${GREEN}Đã cài xong Flutter.${NC}"
-    flutter --version
+    echo -e "${GREEN}Đã cài xong Node.js: $(node -v) và npm: $(npm -v)${NC}"
 else
-    echo -e "${GREEN}✔ Flutter đã được cài đặt: $(flutter --version | head -n 1)${NC}"
+    echo -e "${GREEN}✔ Node.js đã được cài đặt: $(node -v)${NC}"
+    echo -e "${GREEN}✔ npm đã được cài đặt: $(npm -v)${NC}"
 fi
 
 echo -e "\n${BLUE}=== HOÀN TẤT ===${NC}"
