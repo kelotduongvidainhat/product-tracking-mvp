@@ -80,6 +80,8 @@ After installation, try running the following commands in the terminal to ensure
     ```bash
     make infra-up
     make network-up
+    # Important: If 'make network-up' fails to generate certs or starts blindly, 
+    # run: ./scripts/generate_certs.sh
     ./scripts/deploy_chaincode.sh
     ```
 
@@ -90,9 +92,9 @@ After installation, try running the following commands in the terminal to ensure
 
 5.  **Run Frontend (Next.js):**
     ```bash
-    cd frontend/web_app
-    npm run dev
+    make frontend-up
     ```
+    *(Or run locally using `npm run dev` in `frontend/web_app`)*
 
 ## 6. Troubleshooting
 
@@ -121,6 +123,11 @@ If you are unsure if the chaincode is running, you can:
 ## 7. Cleanup
 To stop the network and remove generated artifacts (crypto material, blocks, etc.), run:
 ```bash
-make network-clean
+sudo make network-clean
 ```
 Make sure to clean generated files before commit and push to ensure a clean repository state.
+
+> **Important:** After running `network-clean`, all blockchain certificates and data are lost. You MUST regenerate them before starting the network again:
+> ```bash
+> ./scripts/generate_certs.sh
+> ```

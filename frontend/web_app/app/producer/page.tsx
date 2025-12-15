@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, CheckCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { createProduct } from "@/lib/api";
+import { ProductQRCode } from "@/app/components/ProductQRCode";
 
 export default function ProducerPage() {
     const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ export default function ProducerPage() {
         status: "Manufactured",
     });
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<{ success?: boolean; message?: string } | null>(null);
+    const [result, setResult] = useState<{ success?: boolean; message?: string; productId?: string } | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -24,7 +25,7 @@ export default function ProducerPage() {
 
         try {
             await createProduct(formData);
-            setResult({ success: true, message: `Product ${formData.id} created successfully on Blockchain!` });
+            setResult({ success: true, message: `Product ${formData.id} created successfully on Blockchain!`, productId: formData.id });
             setFormData({ ...formData, id: "", name: "" }); // Reset
         } catch (error: any) {
             console.error(error);
@@ -105,9 +106,16 @@ export default function ProducerPage() {
                             className={`mt-6 p-4 rounded-xl flex items-start ${result.success ? "bg-green-500/20 text-green-200" : "bg-red-500/20 text-red-200"}`}
                         >
                             {result.success ? <CheckCircle className="w-5 h-5 mr-3 mt-0.5" /> : <AlertCircle className="w-5 h-5 mr-3 mt-0.5" />}
-                            <div>
+                            <div className="w-full">
                                 <h4 className="font-bold">{result.success ? "Success" : "Error"}</h4>
-                                <p className="text-sm opacity-90">{result.message}</p>
+                                <p className="text-sm opacity-90 mb-4">{result.message}</p>
+
+                                {result.success && result.productId && (
+                                    <div className="mt-4 flex flex-col items-center p-4 bg-white/10 rounded-lg">
+                                        <p className="text-sm text-slate-300 mb-2">Product QR Code</p>
+                                        <ProductQRCode productId={result.productId} />
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}
