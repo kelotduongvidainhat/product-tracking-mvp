@@ -1,44 +1,44 @@
 #!/bin/bash
 
-# setup.sh - Kiểm tra và cài đặt môi trường cho dự án Product Tracking
-# Tự động tải xuống và cài đặt: Go, Flutter (nếu chưa có)
-# Hướng dẫn cài đặt: Docker (do yêu cầu quyền root/system sâu)
+# setup.sh - Check and setup environment for Product Tracking Project
+# Automatically downloads and installs: Go, Node.js (via NVM) if missing.
+# Installation guide: Docker (due to root/system requirements)
 
-# Màu sắc cho output
+# Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}=== BẮT ĐẦU KIỂM TRA MÔI TRƯỜNG ===${NC}"
+echo -e "${BLUE}=== START ENVIRONMENT CHECK ===${NC}"
 
-# Kiểm tra quyền root
+# Check for root privileges
 if [ "$EUID" -eq 0 ]; then
-    echo -e "${RED}!!! CẢNH BÁO: BẠN ĐANG CHẠY SCRIPT DƯỚI QUYỀN ROOT !!!${NC}"
-    echo -e "${YELLOW}Flutter và Go khuyến nghị cài đặt cho user thường để tránh lỗi permission.${NC}"
-    echo -e "${YELLOW}Script này được thiết kế để chạy dưới quyền user thường và sẽ hỏi password sudo khi cần.${NC}"
-    echo -e "Nếu bạn tiếp tục, Flutter sẽ cảnh báo và có thể không hoạt động đúng."
-    read -p "Bạn có chắc chắn muốn tiếp tục không? (y/N): " confirm_root
+    echo -e "${RED}!!! WARNING: YOU ARE RUNNING THIS SCRIPT AS ROOT !!!${NC}"
+    echo -e "${YELLOW}Node.js and Go are recommended to be installed as a normal user to avoid permission errors.${NC}"
+    echo -e "${YELLOW}This script is designed to run as a normal user and will ask for sudo password when needed.${NC}"
+    echo -e "If you continue, tools might verify incorrectly or behave unexpectedly."
+    read -p "Are you sure you want to continue? (y/N): " confirm_root
     if [[ "$confirm_root" != "y" && "$confirm_root" != "Y" ]]; then
-        echo -e "${GREEN}Đã hủy. Vui lòng chạy lại script KHÔNG dùng sudo (ví dụ: ./scripts/setup.sh)${NC}"
+        echo -e "${GREEN}Cancelled. Please run the script WITHOUT sudo (e.g., ./scripts/setup.sh)${NC}"
         exit 1
     fi
 fi
 
-# Hàm kiểm tra command
+# Function to check command
 check_cmd() {
     if command -v "$1" >/dev/null 2>&1; then
-        echo -e "${GREEN}✔ $1 đã được cài đặt: $( $1 --version | head -n 1 )${NC}"
+        echo -e "${GREEN}✔ $1 is installed: $( $1 --version | head -n 1 )${NC}"
         return 0
     else
-        echo -e "${YELLOW}✘ $1 chưa được cài đặt.${NC}"
+        echo -e "${YELLOW}✘ $1 is NOT installed.${NC}"
         return 1
     fi
 }
 
-# 1. Kiểm tra các công cụ cơ bản (curl, git, make, tar, unzip)
-echo -e "\n${BLUE}[1/4] Kiểm tra công cụ hệ thống cơ bản...${NC}"
+# 1. Check basic system tools (curl, git, make, tar, unzip)
+echo -e "\n${BLUE}[1/4] Checking basic system tools...${NC}"
 REQUIRED_SYS_TOOLS=("curl" "git" "make" "tar" "unzip")
 MISSING_SYS_TOOLS=()
 
@@ -51,86 +51,86 @@ for tool in "${REQUIRED_SYS_TOOLS[@]}"; do
 done
 
 if [ ${#MISSING_SYS_TOOLS[@]} -ne 0 ]; then
-    echo -e "${RED}Thiếu các công cụ cơ bản: ${MISSING_SYS_TOOLS[*]}. Đang thử cài đặt bằng apt-get (cần sudo)...${NC}"
+    echo -e "${RED}Missing basic tools: ${MISSING_SYS_TOOLS[*]}. Attempting to install via apt-get (sudo required)...${NC}"
     if command -v apt-get >/dev/null 2>&1; then
         sudo apt-get update && sudo apt-get install -y "${MISSING_SYS_TOOLS[@]}"
     else
-        echo -e "${RED}Không tìm thấy apt-get. Vui lòng cài đặt thủ công: ${MISSING_SYS_TOOLS[*]}${NC}"
+        echo -e "${RED}apt-get not found. Please install manually: ${MISSING_SYS_TOOLS[*]}${NC}"
         exit 1
     fi
 fi
 
-# 2. Kiểm tra Docker
-echo -e "\n${BLUE}[2/4] Kiểm tra Docker...${NC}"
+# 2. Check Docker
+echo -e "\n${BLUE}[2/4] Checking Docker...${NC}"
 if check_cmd "docker"; then
-    echo "Docker đã sẵn sàng."
+    echo "Docker is ready."
 else
-    echo -e "${YELLOW}Đang tải script cài đặt Docker tu dong...${NC}"
+    echo -e "${YELLOW}Downloading automatic Docker installation script...${NC}"
     curl -fsSL https://get.docker.com -o get-docker.sh
-    echo -e "${YELLOW}Vui lòng chạy lệnh sau để cài Docker (yêu cầu quyền root):${NC}"
+    echo -e "${YELLOW}Please run the following command to install Docker (requires root):${NC}"
     echo -e "  sudo sh get-docker.sh"
-    echo -e "${YELLOW}Sau đó thêm user hiện tại vào group docker:${NC}"
+    echo -e "${YELLOW}Then add your current user to the docker group:${NC}"
     echo -e "  sudo usermod -aG docker \$USER && newgrp docker"
 fi
 
-# 3. Kiểm tra Golang
-echo -e "\n${BLUE}[3/4] Kiểm tra Golang...${NC}"
+# 3. Check Golang
+echo -e "\n${BLUE}[3/4] Checking Golang...${NC}"
 GO_VERSION="1.21.5"
 GO_TAR="go$GO_VERSION.linux-amd64.tar.gz"
 INSTALL_DIR="$HOME/.local/go"
 if ! command -v go >/dev/null 2>&1; then
-    echo -e "${YELLOW}Go chưa có. Đang tự động tải về phiên bản $GO_VERSION ...${NC}"
+    echo -e "${YELLOW}Go missing. Automatically downloading version $GO_VERSION ...${NC}"
     cd /tmp
     curl -OL "https://go.dev/dl/$GO_TAR"
     
-    echo -e "${YELLOW}Đang giải nén vào $INSTALL_DIR ...${NC}"
+    echo -e "${YELLOW}Extracting to $INSTALL_DIR ...${NC}"
     mkdir -p "$HOME/.local"
     rm -rf "$INSTALL_DIR"
     tar -C "$HOME/.local" -xzf "$GO_TAR"
-    # Lưu ý: tar file go thường chứa thư mục 'go', nên nó sẽ giải nén thành $HOME/.local/go
+    # Note: go tarball usually contains 'go' directory, so it extracts to $HOME/.local/go
     
-    # Setup PATH tạm thời cho script này
+    # Setup temporary PATH for this script
     export PATH=$PATH:$INSTALL_DIR/bin
     
-    # Cấu hình shell
+    # Configure shell profile
     SHELL_PROFILE="$HOME/.bashrc"
     if [ -n "$ZSH_VERSION" ]; then SHELL_PROFILE="$HOME/.zshrc"; fi
     
     if ! grep -q "$INSTALL_DIR/bin" "$SHELL_PROFILE"; then
-        echo -e "${GREEN}Cập nhật PATH vào $SHELL_PROFILE ...${NC}"
+        echo -e "${GREEN}Updating PATH in $SHELL_PROFILE ...${NC}"
         echo "export PATH=\$PATH:$INSTALL_DIR/bin" >> "$SHELL_PROFILE"
         echo "export GOPATH=$HOME/go" >> "$SHELL_PROFILE"
         echo "export PATH=\$PATH:\$GOPATH/bin" >> "$SHELL_PROFILE"
     fi
     
-    echo -e "${GREEN}Đã cài xong Golang. Vui lòng chạy 'source $SHELL_PROFILE' sau khi script kết thúc.${NC}"
+    echo -e "${GREEN}Golang installed. Please run 'source $SHELL_PROFILE' after script finishes.${NC}"
     go version
 else
-    echo -e "${GREEN}✔ Go đã được cài đặt: $(go version)${NC}"
+    echo -e "${GREEN}✔ Go is installed: $(go version)${NC}"
 fi
 
-# 4. Kiểm tra Node.js & npm (Frontend Mới - Next.js)
-echo -e "\n${BLUE}[4/4] Kiểm tra Node.js & npm...${NC}"
+# 4. Check Node.js & npm (Frontend - Next.js)
+echo -e "\n${BLUE}[4/4] Checking Node.js & npm...${NC}"
 if ! command -v node >/dev/null 2>&1; then
-    echo -e "${YELLOW}Node.js chưa có. Đang thử cài đặt NVM và Node.js LTS...${NC}"
+    echo -e "${YELLOW}Node.js missing. Attempting to install NVM and Node.js LTS...${NC}"
     
-    # Cài đặt NVM
+    # Install NVM
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
     
-    # Load NVM ngay lập tức
+    # Load NVM immediately
     export NVM_DIR="$HOME/.nvm"
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
     
-    # Cài đặt Node LTS
+    # Install Node LTS
     nvm install --lts
     nvm use --lts
     
-    echo -e "${GREEN}Đã cài xong Node.js: $(node -v) và npm: $(npm -v)${NC}"
+    echo -e "${GREEN}Installed Node.js: $(node -v) and npm: $(npm -v)${NC}"
 else
-    echo -e "${GREEN}✔ Node.js đã được cài đặt: $(node -v)${NC}"
-    echo -e "${GREEN}✔ npm đã được cài đặt: $(npm -v)${NC}"
+    echo -e "${GREEN}✔ Node.js is installed: $(node -v)${NC}"
+    echo -e "${GREEN}✔ npm is installed: $(npm -v)${NC}"
 fi
 
-echo -e "\n${BLUE}=== HOÀN TẤT ===${NC}"
-echo -e "${YELLOW}Lưu ý: Nếu bạn vừa cài đặt mới Go hoặc Flutter, hãy chạy lệnh sau để cập nhật biến môi trường ngay lập tức:${NC}"
-echo -e "  source ~/.bashrc  (hoặc source ~/.zshrc)"
+echo -e "\n${BLUE}=== COMPLETE ===${NC}"
+echo -e "${YELLOW}Note: If you just installed Go or Node.js, run this to update env vars immediately:${NC}"
+echo -e "  source ~/.bashrc  (or source ~/.zshrc)"
