@@ -19,7 +19,7 @@ type Product struct {
 	Name            string `json:"name"`
 	ProducerID      string `json:"producer_id"`
 	ManufactureDate string `json:"manufacture_date"`
-	CertHash        string `json:"cert_hash"`
+	IntegrityHash   string `json:"integrity_hash"`
 	Status          string `json:"status"` // e.g., "CREATED", "SHIPPED", "SOLD"
     CreatedTime     string `json:"created_time"`
 }
@@ -31,7 +31,7 @@ func (s *SmartContract) InitLedger(ctx contractapi.TransactionContextInterface) 
 }
 
 // CreateProduct adds a new product to the world state with given details
-func (s *SmartContract) CreateProduct(ctx contractapi.TransactionContextInterface, id string, name string, producerID string, date string, certHash string) error {
+func (s *SmartContract) CreateProduct(ctx contractapi.TransactionContextInterface, id string, name string, producerID string, date string, integrityHash string) error {
 	exists, err := s.ProductExists(ctx, id)
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (s *SmartContract) CreateProduct(ctx contractapi.TransactionContextInterfac
 		Name:            name,
 		ProducerID:      producerID,
 		ManufactureDate: date,
-		CertHash:        certHash,
+		IntegrityHash:   integrityHash,
 		Status:          "CREATED",
         CreatedTime:     time.Now().UTC().Format(time.RFC3339),
 	}

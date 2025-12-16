@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Search, ShieldCheck, Box, User, Calendar, Loader2 } from "lucide-react";
+import { ArrowLeft, Search, ShieldCheck, Box, User, Calendar, Loader2, FileText } from "lucide-react";
 import Link from "next/link";
 import { getProduct, type Product } from "@/lib/api";
 
@@ -99,6 +99,19 @@ export default function ConsumerPage() {
                             <InfoItem icon={<Calendar className="w-4 h-4" />} label="Manufacture Date" value={product.manufactureDate} />
                             <InfoItem icon={<ShieldCheck className="w-4 h-4" />} label="Status" value={product.status} highlight />
                         </div>
+
+                        {product.integrityHash && (
+                            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <FileText className="w-4 h-4 text-purple-400" />
+                                    <p className="text-xs text-slate-500 uppercase tracking-wider">Integrity Hash</p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <code className="text-[10px] md:text-xs text-green-300 font-mono break-all">{product.integrityHash}</code>
+                                    <span className="shrink-0 text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Valid</span>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="mt-8 pt-6 border-t border-white/10">
                             <p className="text-xs text-slate-500 uppercase tracking-wider mb-2">Blockchain Transaction ID</p>

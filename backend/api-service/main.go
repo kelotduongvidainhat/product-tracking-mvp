@@ -20,7 +20,7 @@ type Product struct {
 	Name            string `json:"name"`
 	ProducerID      string `json:"producer_id"`
 	ManufactureDate string `json:"manufacture_date"`
-	CertHash        string `json:"cert_hash"`
+	IntegrityHash   string `json:"integrity_hash"`
 	Status          string `json:"status"` // PENDING, VERIFIED, FAILED
 }
 
@@ -52,6 +52,7 @@ func main() {
     })
 
 	r.POST("/products", createProduct)
+	r.GET("/products", getProducts)
 	r.GET("/products/:id", getProduct)
 
 	port := os.Getenv("PORT")
@@ -94,7 +95,7 @@ func initDB() {
 		name TEXT,
 		producer_id TEXT,
 		manufacture_date TEXT,
-		cert_hash TEXT,
+		integrity_hash TEXT,
 		status TEXT,
         blockchain_tx_id TEXT,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -130,9 +131,9 @@ func createProduct(c *gin.Context) {
 
 	// 1. Save to DB (Status: PENDING)
 	input.Status = "PENDING"
-	query := `INSERT INTO products (id, name, producer_id, manufacture_date, cert_hash, status) 
+	query := `INSERT INTO products (id, name, producer_id, manufacture_date, integrity_hash, status) 
 			  VALUES ($1, $2, $3, $4, $5, $6)`
-	_, err := db.Exec(query, input.ID, input.Name, input.ProducerID, input.ManufactureDate, input.CertHash, input.Status)
+	_, err := db.Exec(query, input.ID, input.Name, input.ProducerID, input.ManufactureDate, input.IntegrityHash, input.Status)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save to DB: " + err.Error()})
 		return
@@ -159,8 +160,8 @@ func createProduct(c *gin.Context) {
 func getProduct(c *gin.Context) {
 	id := c.Param("id")
 	var p Product
-	query := `SELECT id, name, producer_id, manufacture_date, cert_hash, status FROM products WHERE id=$1`
-	err := db.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.ProducerID, &p.ManufactureDate, &p.CertHash, &p.Status)
+	query := `SELECT id, name, producer_id, manufacture_date, integrity_hash, status FROM products WHERE id=$1`
+	err := db.QueryRow(query, id).Scan(&p.ID, &p.Name, &p.ProducerID, &p.ManufactureDate, &p.IntegrityHash, &p.Status)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
@@ -170,4 +171,32 @@ func getProduct(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, p)
+}
+
+func getProducts(c *gin.Context) {
+	query := `SELECT id, name, producer_id, manufacture_date, integrity_hash, status, blockchain_tx_id FROM products ORDER BY created_at DESC`
+	rows, err := db.Query(query)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	defer rows.Close()
+
+	var products []Product
+	for rows.Next() {
+		var p Product
+        var txId sql.NullString // Handle nullable tx_id
+		err := rows.Scan(&p.ID, &p.Name, &p.ProducerID, &p.ManufactureDate, &p.IntegrityHash, &p.Status, &txId)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+        if txId.Valid {
+            // We can add a field for TxID if we want to show it, currently Product struct doesn't have it explicitly as public field?
+            // Wait, Product struct in main.go:18 does NOT have BlockchainTxID field mapped to json.
+            // Let's check struct first.
+        }
+		products = append(products, p)
+	}
+	c.JSON(http.StatusOK, products)
 }

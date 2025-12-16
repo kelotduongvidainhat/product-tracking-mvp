@@ -24,7 +24,7 @@ type Product struct {
 	Name            string `json:"name"`
 	ProducerID      string `json:"producer_id"`
 	ManufactureDate string `json:"manufacture_date"`
-	CertHash        string `json:"cert_hash"`
+	IntegrityHash   string `json:"integrity_hash"`
 	Status          string `json:"status"`
 }
 
@@ -203,7 +203,7 @@ func processMessage(value []byte) {
 
     // 1. Submit Transaction to Fabric
     log.Println("Submitting transaction to Blockchain...")
-    _, err := contract.SubmitTransaction("CreateProduct", p.ID, p.Name, p.ProducerID, p.ManufactureDate, p.CertHash)
+    _, err := contract.SubmitTransaction("CreateProduct", p.ID, p.Name, p.ProducerID, p.ManufactureDate, p.IntegrityHash)
     
     status := "VERIFIED"
     if err != nil {

@@ -3,7 +3,7 @@ set -e
 
 export CC_NAME="product_cc"
 export CC_VERSION="1.0"
-export CC_SEQUENCE="1"
+export CC_SEQUENCE="2"
 export CHANNEL_NAME="mychannel"
 export DOCKER_CMD="/usr/bin/docker"
 export ORDERER_ADDR="orderer.example.com:7050"
@@ -41,7 +41,7 @@ $DOCKER_CMD cp product_cc.tar.gz cli:/opt/gopath/src/github.com/hyperledger/fabr
 $DOCKER_CMD exec cli peer lifecycle chaincode install product_cc.tar.gz
 
 echo "Querying installed chaincode ID..."
-CC_PACKAGE_ID=$($DOCKER_CMD exec cli peer lifecycle chaincode queryinstalled | grep ${CC_NAME}_${CC_VERSION} | awk -F " " '{print $3}' | sed 's/,$//')
+CC_PACKAGE_ID=$($DOCKER_CMD exec cli peer lifecycle chaincode queryinstalled | grep ${CC_NAME}_${CC_VERSION} | awk -F " " '{print $3}' | sed 's/,$//' | head -n 1)
 echo "Package ID: $CC_PACKAGE_ID"
 
 # 3. Approve Chaincode

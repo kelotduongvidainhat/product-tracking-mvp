@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PackageSearch, Factory } from "lucide-react";
+import { PackageSearch, Factory, List } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -55,9 +55,21 @@ export default function Home() {
         </Link>
       </div>
 
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="mt-12 z-10"
+      >
+        <Link href="/transactions" className="flex items-center text-slate-400 hover:text-white transition-colors gap-2 px-6 py-3 rounded-full hover:bg-white/5 border border-transparent hover:border-white/10">
+          <List className="w-5 h-5" />
+          <span>View All Transactions</span>
+        </Link>
+      </motion.div>
+
       <footer className="absolute bottom-6 text-slate-500 text-sm">
         Powered by Hyperledger Fabric
       </footer>
-    </main>
+    </main >
   );
 }

@@ -80,8 +80,9 @@ After installation, try running the following commands in the terminal to ensure
     ```bash
     make infra-up
     make network-up
+    
     # Important: If 'make network-up' fails to generate certs or starts blindly, 
-    # run: ./scripts/generate_certs.sh
+    # run: sudo ./scripts/generate_certs.sh
     ./scripts/deploy_chaincode.sh
     ```
 

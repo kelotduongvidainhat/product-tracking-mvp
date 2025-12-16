@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, CheckCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle, AlertCircle, FileText } from "lucide-react";
 import Link from "next/link";
 import { createProduct } from "@/lib/api";
 import { ProductQRCode } from "@/app/components/ProductQRCode";
@@ -14,9 +14,36 @@ export default function ProducerPage() {
         producerId: "PROD-001", // Default for MVP
         manufactureDate: new Date().toISOString().split("T")[0],
         status: "Manufactured",
+        integrityHash: "",
     });
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<{ success?: boolean; message?: string; productId?: string } | null>(null);
+
+    // Auto-calculate Integrity Hash whenever specific fields change
+    useEffect(() => {
+        const computeHash = async () => {
+            if (!formData.id || !formData.name) {
+                setFormData(prev => ({ ...prev, integrityHash: "" }));
+                return;
+            }
+
+            // Format data as string "ID+Name+ProducerID+Date"
+            const dataString = `${formData.id}${formData.name}${formData.producerId}${formData.manufactureDate}`;
+            const encoder = new TextEncoder();
+            const data = encoder.encode(dataString);
+            const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+            setFormData(prev => {
+                if (prev.integrityHash === hashHex) return prev;
+                return { ...prev, integrityHash: hashHex };
+            });
+        };
+
+        computeHash();
+    }, [formData.id, formData.name, formData.producerId, formData.manufactureDate]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,7 +53,7 @@ export default function ProducerPage() {
         try {
             await createProduct(formData);
             setResult({ success: true, message: `Product ${formData.id} created successfully on Blockchain!`, productId: formData.id });
-            setFormData({ ...formData, id: "", name: "" }); // Reset
+            setFormData({ ...formData, id: "", name: "", integrityHash: "" }); // Reset
         } catch (error: any) {
             console.error(error);
             setResult({ success: false, message: error.response?.data?.error || "Failed to create product." });
@@ -87,6 +114,19 @@ export default function ProducerPage() {
                                 placeholder="Item Name"
                                 className="w-full px-4 py-3 rounded-xl modern-input"
                             />
+                        </div>
+
+                        <div className="space-y-4">
+                            {formData.integrityHash && (
+                                <div className="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex items-start gap-3">
+                                    <FileText className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
+                                    <div className="overflow-hidden">
+                                        <p className="text-xs text-slate-500 uppercase font-semibold mb-1">DATA INTEGRITY HASH (AUTO)</p>
+                                        <p className="text-xs text-slate-300 font-mono break-all">{formData.integrityHash}</p>
+                                        <p className="text-[10px] text-slate-500 mt-1">Generated from ID + Name + Producer + Date</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <button

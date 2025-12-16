@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Loader2, CheckCircle, XCircle, Package } from "lucide-react";
+import { ArrowLeft, Loader2, CheckCircle, XCircle, Package, FileText } from "lucide-react";
 import Link from "next/link";
 import { getProduct } from "@/lib/api";
 
@@ -97,6 +97,17 @@ export default function VerifyPage() {
                                     <p className="text-white mt-1">{product.manufactureDate}</p>
                                 </div>
                             </div>
+
+                            {product.integrityHash && (
+                                <div className="p-4 bg-white/5 rounded-lg border border-purple-500/10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <FileText className="w-4 h-4 text-purple-400" />
+                                        <label className="text-xs text-slate-400 uppercase tracking-wider">Product Integrity (SHA-256)</label>
+                                    </div>
+                                    <p className="font-mono text-xs text-green-300 break-all">{product.integrityHash}</p>
+                                    <p className="text-[10px] text-slate-500 mt-1">Match this hash with the NFC tag to verify product data.</p>
+                                </div>
+                            )}
 
                             <div className="mt-8 p-4 bg-slate-900/50 rounded-lg overflow-hidden">
                                 <label className="text-xs text-slate-500 uppercase tracking-wider mb-2 block">Blockchain Signature (Owner)</label>

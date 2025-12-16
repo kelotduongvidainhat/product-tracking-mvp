@@ -11,7 +11,7 @@ export interface Product {
     manufactureDate: string;
     status: string;
     blockchainTxId?: string;
-    certHash?: string;
+    integrityHash?: string;
 }
 
 export const api = axios.create({
@@ -21,7 +21,7 @@ export const api = axios.create({
     },
 });
 
-export const createProduct = async (product: Omit<Product, "blockchainTxId" | "certHash">) => {
+export const createProduct = async (product: Omit<Product, "blockchainTxId">) => {
     const response = await api.post("/products", product);
     return response.data;
 };
@@ -29,4 +29,9 @@ export const createProduct = async (product: Omit<Product, "blockchainTxId" | "c
 export const getProduct = async (id: string) => {
     const response = await api.get(`/products/${id}`);
     return response.data as Product;
+};
+
+export const getAllProducts = async () => {
+    const response = await api.get("/products");
+    return response.data as Product[];
 };
